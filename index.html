@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AaronFest 2026 - Clasificado</title>
+    <style>
+        :root {
+            --neon-white: #ffffff;
+            --neon-red: #ff3131;
+            --neon-blue: #00d4ff;
+            --neon-violet: #bc13fe;
+            --bg-dark: #050a15;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.4);
+            box-sizing: border-box;
+            box-shadow: inset 0 0 25px var(--neon-white);
+        }
+
+        /* Estrellas más visibles y densas */
+        .stars {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 40px 60px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 150px 150px, #fff, rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 250px 350px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 100px 500px, #fff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 300px 200px, #fff, rgba(0,0,0,0));
+            background-size: 250px 250px;
+            z-index: -1;
+            opacity: 0.6; /* Mayor opacidad */
+        }
+
+        #game, #secret-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        #secret-content {
+            display: none;
+            opacity: 0;
+            position: absolute;
+        }
+
+        p {
+            text-shadow: 0 0 10px var(--neon-white);
+            padding: 0 30px;
+            text-align: center;
+        }
+
+        .venn-container {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            margin: 20px 0;
+        }
+
+        .sphere {
+            position: absolute;
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            mix-blend-mode: screen;
+        }
+
+        .red { background: var(--neon-red); box-shadow: 0 0 35px var(--neon-red); top: 0; left: 50%; transform: translateX(-50%); }
+        .blue { background: var(--neon-blue); box-shadow: 0 0 35px var(--neon-blue); bottom: 0; left: 0; }
+        .violet { background: var(--neon-violet); box-shadow: 0 0 35px var(--neon-violet); bottom: 0; right: 0; }
+
+        .combo-lock {
+            display: flex;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .digit-input {
+            width: 50px;
+            height: 70px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid var(--neon-white);
+            border-radius: 8px;
+            color: white;
+            font-size: 2.2rem;
+            text-align: center;
+            box-shadow: 0 0 15px var(--neon-white);
+            outline: none;
+            -moz-appearance: textfield;
+        }
+
+        /* Eliminar flechas de incremento predeterminadas */
+        .digit-input::-webkit-outer-spin-button,
+        .digit-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .btn-unlock {
+            background: transparent;
+            color: white;
+            border: 2px solid var(--neon-white);
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            cursor: pointer;
+            box-shadow: 0 0 20px var(--neon-white);
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-unlock:active {
+            transform: scale(0.9);
+            background: white;
+            color: var(--bg-dark);
+        }
+
+        .folder {
+            background: #ffffff;
+            color: #1a1a1a;
+            padding: 45px 35px;
+            width: 75%;
+            max-width: 270px;
+            box-shadow: 0 0 50px rgba(255,255,255,0.5);
+            transform: rotate(-2deg);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+
+    <div id="game">
+        <div class="venn-container">
+            <div class="sphere red"></div>
+            <div class="sphere blue"></div>
+            <div class="sphere violet"></div>
+        </div>
+
+        <p style="font-size: 0.95rem; line-height: 1.6;">
+            "Newton determinó 7 colores en el arcoíris.<br>
+            Aquí, el orden de los factores <b>sí</b> altera el producto."
+        </p>
+
+        <div class="combo-lock">
+            <input type="number" class="digit-input" id="d1" min="0" max="9" oninput="limitAndNext(this, 'd2')" onkeydown="handleBackspace(event, null)" pattern="\d*">
+            <input type="number" class="digit-input" id="d2" min="0" max="9" oninput="limitAndNext(this, 'd3')" onkeydown="handleBackspace(event, 'd1')" pattern="\d*">
+            <input type="number" class="digit-input" id="d3" min="0" max="9" oninput="limitAndNext(this, null)" onkeydown="handleBackspace(event, 'd2')" pattern="\d*">
+        </div>
+
+        <button class="btn-unlock" onclick="validateLock()">DESBLOQUEAR</button>
+
+        <p onclick="showHint()" style="cursor:pointer; text-decoration: underline; font-size: 0.8rem; opacity: 0.6; margin-top: 30px;">Ver pista</p>
+        <div id="hint-text" style="display:none; font-size: 0.75rem; margin-top: 10px; color: #a1adcf;">Rojo, Naranja, Amarillo, Verde, Azul, Añil, Violeta.</div>
+    </div>
+
+    <div id="secret-content">
+        <div class="folder">
+            <h2 style="border-bottom: 2px solid #333; padding-bottom: 15px; letter-spacing: 2px;">TOP SECRET</h2>
+            <p style="font-family: 'Courier New', Courier, monospace; font-weight: bold; font-size: 1.25rem; margin-top: 45px; line-height: 1.8;">
+                02-05 <br>
+                AaronFest-2026<br>
+                <span style="border: 1.5px solid black; padding: 2px 8px; font-size: 0.9rem;">COMING SOON</span>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function limitAndNext(current, nextId) {
+            // Solo permite un dígito
+            if (current.value.length > 1) {
+                current.value = current.value.slice(-1);
+            }
+            
+            // Si el valor ingresado es mayor a 9 o menor a 0, lo limpia (aunque el type=number ayuda)
+            if (current.value > 9) current.value = 9;
+            if (current.value < 0) current.value = 0;
+
+            // Salto automático
+            if (current.value.length === 1 && nextId) {
+                document.getElementById(nextId).focus();
+            }
+        }
+
+        function handleBackspace(e, prevId) {
+            if (e.key === 'Backspace') {
+                e.preventDefault();
+                const el = e.target;
+
+                // Delete current digit if present
+                if (el.value && el.value.length > 0) {
+                    el.value = '';
+                }
+
+                // Move to previous input (if any) and clear it
+                if (prevId) {
+                    const prev = document.getElementById(prevId);
+                    prev.focus();
+                    prev.value = '';
+                }
+            }
+        }
+
+        function validateLock() {
+            const v1 = document.getElementById('d1').value;
+            const v2 = document.getElementById('d2').value;
+            const v3 = document.getElementById('d3').value;
+            const code = v1 + v2 + v3;
+
+            if(code === "157") {
+                revealSecret();
+            } else {
+                alert("ACCESO RECHAZADO: Combinación errónea.");
+                document.getElementById('d1').value = "";
+                document.getElementById('d2').value = "";
+                document.getElementById('d3').value = "";
+                document.getElementById('d1').focus();
+            }
+        }
+
+        function revealSecret() {
+            const game = document.getElementById('game');
+            const secret = document.getElementById('secret-content');
+            game.style.opacity = '0';
+            setTimeout(() => {
+                game.style.display = 'none';
+                secret.style.display = 'flex';
+                setTimeout(() => secret.style.opacity = '1', 50);
+            }, 800);
+        }
+
+        function showHint() {
+            document.getElementById('hint-text').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
